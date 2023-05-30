@@ -4,10 +4,13 @@
  */
 package ventanas;
 
+import javax.swing.*;
 import java.sql.*;
 import clases.conexion;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.WindowConstants;
 import javax.swing.table.DefaultTableModel;
@@ -21,24 +24,75 @@ public class gestionar_usuario extends javax.swing.JFrame {
     String user;
     public static String user_update = "";
     DefaultTableModel model = new DefaultTableModel();
+
     /**
      * Creates new form gestionar_usuario
      */
     public gestionar_usuario() {
         initComponents();
-       
+
         user = login.user;
-        
+
         setLocationRelativeTo(null);
         setResizable(false);
         setTitle("Gestion de usuarios");
         setSize(800, 520);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         
+        //imagen para retroceder
+        ImageIcon img_atrsa = new ImageIcon("src/imagenes/fecha_atras.png");
+        Icon icono_atras = new ImageIcon(img_atrsa.getImage().getScaledInstance(jButton1.getWidth(),
+                jButton1.getHeight(), Image.SCALE_DEFAULT));
+        jButton1.setIcon(icono_atras);
+        this.repaint();
+
+        try {
+            Connection cn = conexion.conectar();
+            PreparedStatement pst = cn.prepareStatement(
+                    "select id_usuario, nombre_usuario, username, tipo_nivel, estatus from usuarios");
+
+            ResultSet rs = pst.executeQuery();
+
+            tabla_usuarios = new JTable(model);
+            sp_tabla_usuarios.setViewportView(tabla_usuarios);
+
+            model.addColumn("id Usuario");
+            model.addColumn("Nombre");
+            model.addColumn("usuario");
+            model.addColumn("Permiso");
+            model.addColumn("Estatus");
+
+            while (rs.next()) {
+                Object[] fila = new Object[5];
+                for (int i = 0; i < 5; i++) {
+                    fila[i] = rs.getObject(i+1);
+                }
+                model.addRow(fila);
+            }
+            cn.close();
+
+        } catch (SQLException e) {
+            System.err.println("Error al llenar tabla" + e);
+            JOptionPane.showMessageDialog(null, "Error al llenar tabla");
+        }
         
         
+        tabla_usuarios.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e){
+                int fila_point = tabla_usuarios.rowAtPoint(e.getPoint());
+                int columna_point = 2;
+                
+                if(fila_point>-1){
+                    user_update = (String)model.getValueAt(fila_point, columna_point);
+                    informacion_usuario informacion_usuario = new informacion_usuario();
+                    informacion_usuario.setVisible(true);
+                    
+                }
+            }
+        });
         
-        
+
     }
 
     /**
@@ -54,8 +108,8 @@ public class gestionar_usuario extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         sp_tabla_usuarios = new javax.swing.JScrollPane();
         tabla_usuarios = new javax.swing.JTable();
-        jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -78,17 +132,16 @@ public class gestionar_usuario extends javax.swing.JFrame {
         ));
         sp_tabla_usuarios.setViewportView(tabla_usuarios);
 
-        jButton1.setText("Guardar cambios");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
         jButton2.setText("Eliminar Usuario");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
             }
         });
 
@@ -105,25 +158,24 @@ public class gestionar_usuario extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, colorFondoLayout.createSequentialGroup()
                         .addGap(0, 422, Short.MAX_VALUE)
                         .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(45, 45, 45)
-                        .addComponent(jButton1)
-                        .addGap(82, 82, 82))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, colorFondoLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(263, 263, 263))
+                        .addGap(242, 242, 242))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, colorFondoLayout.createSequentialGroup()
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(263, 263, 263))))
         );
         colorFondoLayout.setVerticalGroup(
             colorFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(colorFondoLayout.createSequentialGroup()
-                .addGap(34, 34, 34)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(14, 14, 14)
+                .addGroup(colorFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(sp_tabla_usuarios, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26)
-                .addGroup(colorFondoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                .addComponent(jButton2)
                 .addContainerGap(97, Short.MAX_VALUE))
         );
 
@@ -132,13 +184,14 @@ public class gestionar_usuario extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        dispose();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
